@@ -10,7 +10,7 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins: [react(), tailwindcss()],
-    base: "/app/",
+    base: "/",
     resolve: {
       alias: {
         "@": path.resolve(new URL(".", import.meta.url).pathname, "./src"),

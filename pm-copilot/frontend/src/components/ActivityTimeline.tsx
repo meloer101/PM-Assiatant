@@ -137,39 +137,39 @@ export function ActivityTimeline({
     }
   }, [isLoading, processedEvents]);
   return (
-    <Card className={`border-none rounded-lg bg-neutral-700 ${isTimelineCollapsed ? "h-10 py-2" : "max-h-96 py-2"}`}>
+    <Card className={`border border-[#E5E0D8] rounded-2xl bg-[#FAF9F6] shadow-sm transition-all duration-300 ${isTimelineCollapsed ? "h-12 py-3" : "max-h-96 py-3"}`}>
       <CardHeader className="py-0">
         <CardDescription className="flex items-center justify-between">
           <div
-            className="flex items-center justify-start text-sm w-full cursor-pointer gap-2 text-neutral-100"
+            className="flex items-center justify-start text-sm w-full cursor-pointer gap-2 text-[#1A1A1A] font-medium"
             onClick={() => setIsTimelineCollapsed(!isTimelineCollapsed)}
           >
             <span>Research</span>
             {websiteCount > 0 && (
-              <span className="text-xs bg-neutral-600 px-2 py-0.5 rounded-full">
+              <span className="text-xs bg-[#D9653B]/10 text-[#D9653B] px-2.5 py-0.5 rounded-full">
                 {websiteCount} websites
               </span>
             )}
             {isTimelineCollapsed ? (
-              <ChevronDown className="h-4 w-4 mr-2" />
+              <ChevronDown className="h-4 w-4 mr-2 text-[#666666]" />
             ) : (
-              <ChevronUp className="h-4 w-4 mr-2" />
+              <ChevronUp className="h-4 w-4 mr-2 text-[#666666]" />
             )}
           </div>
         </CardDescription>
       </CardHeader>
       {!isTimelineCollapsed && (
-        <ScrollArea className="max-h-80 overflow-y-auto">
+        <ScrollArea className="max-h-80 overflow-y-auto mt-4">
           <CardContent>
             {isLoading && processedEvents.length === 0 && (
               <div className="relative pl-8 pb-4">
-                <div className="absolute left-3 top-3.5 h-full w-0.5 bg-neutral-800" />
-                <div className="absolute left-0.5 top-2 h-5 w-5 rounded-full bg-neutral-800 flex items-center justify-center ring-4 ring-neutral-900">
-                  <Loader2 className="h-3 w-3 text-neutral-400 animate-spin" />
+                <div className="absolute left-3 top-3.5 h-full w-0.5 bg-[#E5E0D8]" />
+                <div className="absolute left-0.5 top-2 h-5 w-5 rounded-full bg-white flex items-center justify-center ring-4 ring-[#FAF9F6] border border-[#E5E0D8]">
+                  <Loader2 className="h-3 w-3 text-[#D9653B] animate-spin" />
                 </div>
                 <div>
-                  <p className="text-sm text-neutral-300 font-medium">
-                    Thinking...
+                  <p className="text-sm text-[#666666] font-medium">
+                    思考中...
                   </p>
                 </div>
               </div>
@@ -177,46 +177,48 @@ export function ActivityTimeline({
             {processedEvents.length > 0 ? (
               <div className="space-y-0">
                 {processedEvents.map((eventItem, index) => (
-                  <div key={index} className="relative pl-8 pb-4">
+                  <div key={index} className="relative pl-8 pb-6">
                     {index < processedEvents.length - 1 ||
                     (isLoading && index === processedEvents.length - 1) ? (
-                      <div className="absolute left-3 top-3.5 h-full w-0.5 bg-neutral-600" />
+                      <div className="absolute left-3 top-3.5 h-full w-0.5 bg-[#E5E0D8]" />
                     ) : null}
-                    <div className="absolute left-0.5 top-2 h-6 w-6 rounded-full bg-neutral-600 flex items-center justify-center ring-4 ring-neutral-700">
+                    <div className="absolute left-0.5 top-2 h-6 w-6 rounded-full bg-white flex items-center justify-center ring-4 ring-[#FAF9F6] border border-[#E5E0D8]">
                       {getEventIcon(eventItem.title, index)}
                     </div>
                     <div>
-                      <p className="text-sm text-neutral-200 font-medium mb-0.5">
+                      <p className="text-sm text-[#1A1A1A] font-medium mb-1">
                         {eventItem.title}
                       </p>
-                      <div className="text-xs text-neutral-300 leading-relaxed">
+                      <div className="text-xs text-[#666666] leading-relaxed">
                         {isJsonData(eventItem.data) ? (
-                          <pre className="bg-neutral-800 p-2 rounded text-xs overflow-x-auto whitespace-pre-wrap">
+                          <pre className="bg-white border border-[#E5E0D8] p-3 rounded-xl text-xs overflow-x-auto whitespace-pre-wrap mt-2">
                             {formatEventData(eventItem.data)}
                           </pre>
                         ) : (
-                          <ReactMarkdown
-                            components={{
-                              p: ({ children }) => <span>{children}</span>,
-                              a: ({ href, children }) => (
-                                <a
-                                  href={href}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-blue-400 hover:text-blue-300 underline"
-                                >
-                                  {children}
-                                </a>
-                              ),
-                              code: ({ children }) => (
-                                <code className="bg-neutral-800 px-1 py-0.5 rounded text-xs">
-                                  {children}
-                                </code>
-                              ),
-                            }}
-                          >
-                            {formatEventData(eventItem.data)}
-                          </ReactMarkdown>
+                          <div className="mt-1">
+                            <ReactMarkdown
+                              components={{
+                                p: ({ children }) => <span>{children}</span>,
+                                a: ({ href, children }) => (
+                                  <a
+                                    href={href}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-[#D9653B] hover:text-[#c2552e] underline"
+                                  >
+                                    {children}
+                                  </a>
+                                ),
+                                code: ({ children }) => (
+                                  <code className="bg-[#F0EBE1] text-[#D9653B] px-1.5 py-0.5 rounded text-xs">
+                                    {children}
+                                  </code>
+                                ),
+                              }}
+                            >
+                              {formatEventData(eventItem.data)}
+                            </ReactMarkdown>
+                          </div>
                         )}
                       </div>
                     </div>
@@ -224,24 +226,21 @@ export function ActivityTimeline({
                 ))}
                 {isLoading && processedEvents.length > 0 && (
                   <div className="relative pl-8 pb-4">
-                    <div className="absolute left-0.5 top-2 h-5 w-5 rounded-full bg-neutral-600 flex items-center justify-center ring-4 ring-neutral-700">
-                      <Loader2 className="h-3 w-3 text-neutral-400 animate-spin" />
+                    <div className="absolute left-0.5 top-2 h-5 w-5 rounded-full bg-white flex items-center justify-center ring-4 ring-[#FAF9F6] border border-[#E5E0D8]">
+                      <Loader2 className="h-3 w-3 text-[#D9653B] animate-spin" />
                     </div>
                     <div>
-                      <p className="text-sm text-neutral-300 font-medium">
-                        Thinking...
+                      <p className="text-sm text-[#666666] font-medium">
+                        思考中...
                       </p>
                     </div>
                   </div>
                 )}
               </div>
-            ) : !isLoading ? ( // Only show "No activity" if not loading and no events
-              <div className="flex flex-col items-center justify-center h-full text-neutral-500 pt-10">
-                <Info className="h-6 w-6 mb-3" />
-                <p className="text-sm">No activity to display.</p>
-                <p className="text-xs text-neutral-600 mt-1">
-                  Timeline will update during processing.
-                </p>
+            ) : !isLoading ? (
+              <div className="flex flex-col items-center justify-center h-full text-[#999999] pt-6 pb-2">
+                <Info className="h-6 w-6 mb-2 text-[#E5E0D8]" />
+                <p className="text-sm">暂无活动记录</p>
               </div>
             ) : null}
           </CardContent>

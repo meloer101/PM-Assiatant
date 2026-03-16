@@ -1,10 +1,12 @@
 """CLI tool for importing documents into the ChromaDB knowledge base.
 
 Usage:
-    python -m app.tools.knowledge_manager import ./docs/company_info.md
+    python -m app.tools.knowledge_manager import <file_path>
+    python -m app.tools.knowledge_manager import-dir <directory>   # e.g. docs/
     python -m app.tools.knowledge_manager list
 """
 
+import re
 import sys
 from pathlib import Path
 
@@ -15,6 +17,15 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 from app.config import config
 
 COLLECTION_NAME = "company_knowledge"
+SUPPORTED_SUFFIXES = (".txt", ".md", ".pdf")
+
+
+def _sanitize_stem(stem: str) -> str:
+    """Normalize filename stem for chunk IDs (ASCII, no spaces/special chars)."""
+    s = stem.strip()
+    s = re.sub(r"[^\w\u4e00-\u9fff\-]", "_", s)
+    s = re.sub(r"_+", "_", s).strip("_")
+    return s or "doc"
 
 
 def _get_collection() -> chromadb.Collection:
@@ -58,7 +69,8 @@ def import_document(file_path: str) -> None:
 
     collection = _get_collection()
 
-    ids = [f"{path.stem}_chunk_{i}" for i in range(len(chunks))]
+    safe_stem = _sanitize_stem(path.stem)
+    ids = [f"{safe_stem}_chunk_{i}" for i in range(len(chunks))]
     metadatas = [
         {"source_file": path.name, "chunk_index": i}
         for i in range(len(chunks))
@@ -96,16 +108,36 @@ def list_documents() -> None:
         print(f"  - {src} ({chunk_count} chunks)")
 
 
+def import_dir(dir_path: str) -> None:
+    """Import all supported documents from a directory (e.g. docs/)."""
+    root = Path(dir_path)
+    if not root.is_dir():
+        print(f"Error: Not a directory: {dir_path}")
+        return
+    files = [
+        f for f in root.iterdir()
+        if f.is_file() and f.suffix.lower() in SUPPORTED_SUFFIXES
+    ]
+    if not files:
+        print(f"No .txt, .md or .pdf files in {root}")
+        return
+    for f in sorted(files):
+        import_document(str(f))
+
+
 if __name__ == "__main__":
     if len(sys.argv) < 2:
         print("Usage:")
         print("  python -m app.tools.knowledge_manager import <file_path>")
+        print("  python -m app.tools.knowledge_manager import-dir <directory>")
         print("  python -m app.tools.knowledge_manager list")
         sys.exit(1)
 
     command = sys.argv[1]
     if command == "import" and len(sys.argv) >= 3:
         import_document(sys.argv[2])
+    elif command == "import-dir" and len(sys.argv) >= 3:
+        import_dir(sys.argv[2])
     elif command == "list":
         list_documents()
     else:

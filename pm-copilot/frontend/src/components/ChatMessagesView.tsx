@@ -1,6 +1,7 @@
 import type React from "react";
+import { Link } from "react-router-dom";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2, Copy, CopyCheck } from "lucide-react";
+import { Loader2, Copy, CopyCheck, Home } from "lucide-react";
 import { InputForm } from "@/components/InputForm";
 import { Button } from "@/components/ui/button";
 import { useState, ReactNode } from "react";
@@ -25,29 +26,29 @@ interface ProcessedEvent {
 // Markdown components (from former ReportView.tsx)
 const mdComponents = {
   h1: ({ className, children, ...props }: MdComponentProps) => (
-    <h1 className={cn("text-2xl font-bold mt-4 mb-2", className)} {...props}>
+    <h1 className={cn("text-2xl font-bold mt-4 mb-2 text-[#1A1A1A]", className)} {...props}>
       {children}
     </h1>
   ),
   h2: ({ className, children, ...props }: MdComponentProps) => (
-    <h2 className={cn("text-xl font-bold mt-3 mb-2", className)} {...props}>
+    <h2 className={cn("text-xl font-bold mt-3 mb-2 text-[#1A1A1A]", className)} {...props}>
       {children}
     </h2>
   ),
   h3: ({ className, children, ...props }: MdComponentProps) => (
-    <h3 className={cn("text-lg font-bold mt-3 mb-1", className)} {...props}>
+    <h3 className={cn("text-lg font-bold mt-3 mb-1 text-[#1A1A1A]", className)} {...props}>
       {children}
     </h3>
   ),
   p: ({ className, children, ...props }: MdComponentProps) => (
-    <p className={cn("mb-3 leading-7", className)} {...props}>
+    <p className={cn("mb-3 leading-7 text-[#333333]", className)} {...props}>
       {children}
     </p>
   ),
   a: ({ className, children, href, ...props }: MdComponentProps) => (
-    <Badge className="text-xs mx-0.5">
+    <Badge className="text-xs mx-0.5 bg-[#D9653B]/10 text-[#D9653B] hover:bg-[#D9653B]/20 border-0">
       <a
-        className={cn("text-blue-400 hover:text-blue-300 text-xs", className)}
+        className={cn("text-[#D9653B] hover:text-[#c2552e] text-xs", className)}
         href={href}
         target="_blank"
         rel="noopener noreferrer"
@@ -58,12 +59,12 @@ const mdComponents = {
     </Badge>
   ),
   ul: ({ className, children, ...props }: MdComponentProps) => (
-    <ul className={cn("list-disc pl-6 mb-3", className)} {...props}>
+    <ul className={cn("list-disc pl-6 mb-3 text-[#333333]", className)} {...props}>
       {children}
     </ul>
   ),
   ol: ({ className, children, ...props }: MdComponentProps) => (
-    <ol className={cn("list-decimal pl-6 mb-3", className)} {...props}>
+    <ol className={cn("list-decimal pl-6 mb-3 text-[#333333]", className)} {...props}>
       {children}
     </ol>
   ),
@@ -75,7 +76,7 @@ const mdComponents = {
   blockquote: ({ className, children, ...props }: MdComponentProps) => (
     <blockquote
       className={cn(
-        "border-l-4 border-neutral-600 pl-4 italic my-3 text-sm",
+        "border-l-4 border-[#D9653B] pl-4 italic my-3 text-sm text-[#666666] bg-[#D9653B]/5 py-2 pr-4 rounded-r-lg",
         className
       )}
       {...props}
@@ -86,7 +87,7 @@ const mdComponents = {
   code: ({ className, children, ...props }: MdComponentProps) => (
     <code
       className={cn(
-        "bg-neutral-900 rounded px-1 py-0.5 font-mono text-xs",
+        "bg-[#F0EBE1] text-[#D9653B] rounded px-1.5 py-0.5 font-mono text-xs",
         className
       )}
       {...props}
@@ -97,7 +98,7 @@ const mdComponents = {
   pre: ({ className, children, ...props }: MdComponentProps) => (
     <pre
       className={cn(
-        "bg-neutral-900 p-3 rounded-lg overflow-x-auto font-mono text-xs my-3",
+        "bg-[#F8F6F0] border border-[#E5E0D8] p-4 rounded-xl overflow-x-auto font-mono text-xs my-3 text-[#333333]",
         className
       )}
       {...props}
@@ -106,11 +107,11 @@ const mdComponents = {
     </pre>
   ),
   hr: ({ className, ...props }: MdComponentProps) => (
-    <hr className={cn("border-neutral-600 my-4", className)} {...props} />
+    <hr className={cn("border-[#E5E0D8] my-6", className)} {...props} />
   ),
   table: ({ className, children, ...props }: MdComponentProps) => (
-    <div className="my-3 overflow-x-auto">
-      <table className={cn("border-collapse w-full", className)} {...props}>
+    <div className="my-4 overflow-x-auto rounded-xl border border-[#E5E0D8]">
+      <table className={cn("border-collapse w-full text-sm", className)} {...props}>
         {children}
       </table>
     </div>
@@ -118,7 +119,7 @@ const mdComponents = {
   th: ({ className, children, ...props }: MdComponentProps) => (
     <th
       className={cn(
-        "border border-neutral-600 px-3 py-2 text-left font-bold",
+        "border-b border-[#E5E0D8] bg-[#F8F6F0] px-4 py-3 text-left font-bold text-[#1A1A1A]",
         className
       )}
       {...props}
@@ -128,7 +129,7 @@ const mdComponents = {
   ),
   td: ({ className, children, ...props }: MdComponentProps) => (
     <td
-      className={cn("border border-neutral-600 px-3 py-2", className)}
+      className={cn("border-b border-[#E5E0D8] px-4 py-3 text-[#333333]", className)}
       {...props}
     >
       {children}
@@ -148,8 +149,8 @@ const HumanMessageBubble: React.FC<HumanMessageBubbleProps> = ({
   mdComponents,
 }) => {
   return (
-    <div className="text-white rounded-3xl break-words min-h-7 bg-neutral-700 max-w-[100%] sm:max-w-[90%] px-4 pt-3 rounded-br-lg">
-      <ReactMarkdown components={mdComponents} remarkPlugins={[remarkGfm]}>
+    <div className="text-white rounded-3xl break-words min-h-7 bg-[#D9653B] max-w-[100%] sm:max-w-[90%] px-5 py-3 rounded-br-sm shadow-sm">
+      <ReactMarkdown components={{...mdComponents, p: ({children}) => <p className="m-0">{children}</p>}} remarkPlugins={[remarkGfm]}>
         {message.content}
       </ReactMarkdown>
     </div>
@@ -192,10 +193,10 @@ const AiMessageBubble: React.FC<AiMessageBubbleProps> = ({
   if (shouldDisplayDirectly) {
     // Direct display - show content with copy button, and timeline if available
     return (
-      <div className="relative break-words flex flex-col w-full">
+      <div className="relative break-words flex flex-col w-full bg-white rounded-3xl p-6 shadow-sm border border-[#E5E0D8]">
         {/* Show timeline for interactive_planner_agent if available */}
         {shouldShowTimeline && agent === "root_agent" && (
-          <div className="w-full mb-2">
+          <div className="w-full mb-4">
             <ActivityTimeline 
               processedEvents={processedEvents}
               isLoading={isLoading}
@@ -203,20 +204,20 @@ const AiMessageBubble: React.FC<AiMessageBubbleProps> = ({
             />
           </div>
         )}
-        <div className="flex items-start gap-3">
-          <div className="flex-1">
+        <div className="flex items-start gap-4">
+          <div className="flex-1 text-[#1A1A1A]">
             <ReactMarkdown components={mdComponents} remarkPlugins={[remarkGfm]}>
               {message.content}
             </ReactMarkdown>
           </div>
           <button
             onClick={() => handleCopy(message.content, message.id)}
-            className="p-1 hover:bg-neutral-700 rounded"
+            className="p-2 hover:bg-[#FAF9F6] rounded-xl transition-colors text-[#999999] hover:text-[#D9653B]"
           >
             {copiedMessageId === message.id ? (
-              <CopyCheck className="h-4 w-4 text-green-500" />
+              <CopyCheck className="h-5 w-5 text-green-500" />
             ) : (
-              <Copy className="h-4 w-4 text-neutral-400" />
+              <Copy className="h-5 w-5" />
             )}
           </button>
         </div>
@@ -225,7 +226,7 @@ const AiMessageBubble: React.FC<AiMessageBubbleProps> = ({
   } else if (shouldShowTimeline) {
     // First AI message with timeline only (no direct content display)
     return (
-      <div className="relative break-words flex flex-col w-full">
+      <div className="relative break-words flex flex-col w-full bg-white rounded-3xl p-6 shadow-sm border border-[#E5E0D8]">
         <div className="w-full">
           <ActivityTimeline 
             processedEvents={processedEvents}
@@ -235,20 +236,20 @@ const AiMessageBubble: React.FC<AiMessageBubbleProps> = ({
         </div>
         {/* Only show accumulated content if it's not empty and not from research agents */}
         {message.content && message.content.trim() && agent !== "root_agent" && (
-          <div className="flex items-start gap-3 mt-2">
-            <div className="flex-1">
+          <div className="flex items-start gap-4 mt-4 pt-4 border-t border-[#E5E0D8]">
+            <div className="flex-1 text-[#1A1A1A]">
               <ReactMarkdown components={mdComponents} remarkPlugins={[remarkGfm]}>
                 {message.content}
               </ReactMarkdown>
             </div>
             <button
               onClick={() => handleCopy(message.content, message.id)}
-              className="p-1 hover:bg-neutral-700 rounded"
+              className="p-2 hover:bg-[#FAF9F6] rounded-xl transition-colors text-[#999999] hover:text-[#D9653B]"
             >
               {copiedMessageId === message.id ? (
-                <CopyCheck className="h-4 w-4 text-green-500" />
+                <CopyCheck className="h-5 w-5 text-green-500" />
               ) : (
-                <Copy className="h-4 w-4 text-neutral-400" />
+                <Copy className="h-5 w-5" />
               )}
             </button>
           </div>
@@ -258,21 +259,21 @@ const AiMessageBubble: React.FC<AiMessageBubbleProps> = ({
   } else {
     // Fallback for other messages - just show content
     return (
-      <div className="relative break-words flex flex-col w-full">
-        <div className="flex items-start gap-3">
-          <div className="flex-1">
+      <div className="relative break-words flex flex-col w-full bg-white rounded-3xl p-6 shadow-sm border border-[#E5E0D8]">
+        <div className="flex items-start gap-4">
+          <div className="flex-1 text-[#1A1A1A]">
             <ReactMarkdown components={mdComponents} remarkPlugins={[remarkGfm]}>
               {message.content}
             </ReactMarkdown>
           </div>
           <button
             onClick={() => handleCopy(message.content, message.id)}
-            className="p-1 hover:bg-neutral-700 rounded"
+            className="p-2 hover:bg-[#FAF9F6] rounded-xl transition-colors text-[#999999] hover:text-[#D9653B]"
           >
             {copiedMessageId === message.id ? (
-              <CopyCheck className="h-4 w-4 text-green-500" />
+              <CopyCheck className="h-5 w-5 text-green-500" />
             ) : (
-              <Copy className="h-4 w-4 text-neutral-400" />
+              <Copy className="h-5 w-5" />
             )}
           </button>
         </div>
@@ -322,23 +323,35 @@ export function ChatMessagesView({
   const lastAiMessageId = lastAiMessage?.id;
 
   return (
-    <div className="flex flex-col h-full w-full">
+    <div className="flex flex-col h-full w-full bg-[#FAF9F6]">
       {/* Header with New Chat button */}
-      <div className="border-b border-neutral-700 p-4 bg-neutral-800">
+      <div className="border-b border-[#E5E0D8] p-4 bg-white/80 backdrop-blur-md sticky top-0 z-10">
         <div className="max-w-4xl mx-auto flex justify-between items-center">
-          <h1 className="text-lg font-semibold text-neutral-100">Chat</h1>
+          <div className="flex items-center gap-3">
+            <Link
+              to="/"
+              className="flex items-center justify-center w-9 h-9 rounded-full bg-[#FAF9F6] hover:bg-[#D9653B]/10 text-[#666666] hover:text-[#D9653B] transition-colors"
+              title="返回主页"
+            >
+              <Home className="w-5 h-5" />
+            </Link>
+            <h1 className="text-lg font-serif font-bold text-[#1A1A1A] flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-[#D9653B]"></span>
+              Research Terminal
+            </h1>
+          </div>
           <Button
             onClick={handleNewChat}
             variant="outline"
-            className="bg-neutral-700 hover:bg-neutral-600 text-neutral-100 border-neutral-600 hover:border-neutral-500"
+            className="bg-white hover:bg-[#FAF9F6] text-[#1A1A1A] border-[#E5E0D8] hover:border-[#D9653B]/50 transition-colors rounded-full px-5"
           >
-            New Chat
+            新对话
           </Button>
         </div>
       </div>
       <div className="flex-1 flex flex-col w-full">
         <ScrollArea ref={scrollAreaRef} className="flex-1 w-full">
-          <div className="p-4 md:p-6 space-y-2 max-w-4xl mx-auto">
+          <div className="p-4 md:p-8 space-y-6 max-w-4xl mx-auto">
             {messages.map((message) => { // Removed index as it's not directly used for this logic
               const eventsForMessage = message.type === "ai" ? (messageEvents.get(message.id) || []) : [];
               
@@ -377,9 +390,9 @@ export function ChatMessagesView({
             {/* It's independent of the per-timeline isLoading state */}
             {isLoading && !lastAiMessage && messages.some(m => m.type === 'human') && (
               <div className="flex justify-start">
-                <div className="flex items-center gap-2 text-neutral-400">
+                <div className="flex items-center gap-3 text-[#D9653B] bg-white px-4 py-2 rounded-full shadow-sm border border-[#E5E0D8]">
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  <span>Thinking...</span>
+                  <span className="text-sm font-medium">思考中...</span>
                 </div>
               </div>
             )}
@@ -389,27 +402,27 @@ export function ChatMessagesView({
                  This one is for the general loading state at the bottom.
              */}
             {isLoading && messages.length > 0 && messages[messages.length -1].type === 'human' && (
-                 <div className="flex justify-start pl-10 pt-2"> {/* Adjusted padding to align similarly to AI bubble */}
-                    <div className="flex items-center gap-2 text-neutral-400">
+                 <div className="flex justify-start pt-2"> {/* Adjusted padding to align similarly to AI bubble */}
+                    <div className="flex items-center gap-3 text-[#D9653B] bg-white px-4 py-2 rounded-full shadow-sm border border-[#E5E0D8]">
                         <Loader2 className="h-4 w-4 animate-spin" />
-                        <span>Thinking...</span>
+                        <span className="text-sm font-medium">思考中...</span>
                     </div>
                 </div>
             )}
           </div>
         </ScrollArea>
       </div>
-      <div className="border-t border-neutral-700 p-4 w-full">
-        <div className="max-w-3xl mx-auto">
+      <div className="border-t border-[#E5E0D8] p-4 w-full bg-white/80 backdrop-blur-md">
+        <div className="max-w-4xl mx-auto">
           <InputForm onSubmit={onSubmit} isLoading={isLoading} context="chat" />
           {isLoading && (
             <div className="mt-4 flex justify-center">
               <Button
                 variant="outline"
                 onClick={onCancel}
-                className="text-red-400 hover:text-red-300"
+                className="text-red-500 hover:text-red-600 hover:bg-red-50 border-red-200 rounded-full px-6"
               >
-                Cancel
+                取消
               </Button>
             </div>
           )}

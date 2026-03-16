@@ -41,7 +41,7 @@ export function InputForm({ onSubmit, isLoading, context = 'homepage' }: InputFo
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-2">
-      <div className="flex items-end space-x-2">
+      <div className="relative flex items-end">
         <Textarea
           ref={textareaRef}
           value={inputValue}
@@ -49,9 +49,14 @@ export function InputForm({ onSubmit, isLoading, context = 'homepage' }: InputFo
           onKeyDown={handleKeyDown}
           placeholder={placeholderText}
           rows={1}
-          className="flex-1 resize-none pr-10 min-h-[40px]"
+          className="flex-1 resize-none pr-14 py-4 min-h-[56px] rounded-2xl border-[#E5E0D8] bg-white/80 focus-visible:ring-[#D9653B] focus-visible:border-[#D9653B] text-[#1A1A1A] placeholder:text-[#999999] shadow-sm transition-all"
         />
-        <Button type="submit" size="icon" disabled={isLoading || !inputValue.trim()}>
+        <Button 
+          type="submit" 
+          size="icon" 
+          disabled={isLoading || !inputValue.trim()}
+          className="absolute right-2 bottom-2 w-10 h-10 rounded-full bg-[#D9653B] hover:bg-[#c2552e] text-white disabled:bg-[#E5E0D8] disabled:text-[#999999] transition-all"
+        >
           {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
         </Button>
       </div>

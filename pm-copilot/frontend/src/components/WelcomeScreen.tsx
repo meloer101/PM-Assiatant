@@ -1,5 +1,7 @@
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { InputForm } from "@/components/InputForm";
+import { Home } from "lucide-react";
 
 interface WelcomeScreenProps {
   handleSubmit: (query: string) => void;
@@ -13,24 +15,35 @@ export function WelcomeScreen({
   onCancel,
 }: WelcomeScreenProps) {
   return (
-    // This container fills the space provided by its parent layout (e.g., the left panel in a split view)
-    // and centers its content (the card) within itself.
     <div className="flex-1 flex flex-col items-center justify-center p-4 overflow-hidden relative">
-      
+      {/* Home: 返回主页 */}
+      <Link
+        to="/"
+        className="fixed top-4 left-4 z-20 flex items-center justify-center w-10 h-10 rounded-full bg-white/80 backdrop-blur-md border border-[#E5E0D8] text-[#666666] hover:text-[#D9653B] hover:border-[#D9653B]/30 transition-colors shadow-sm"
+        title="返回主页"
+      >
+        <Home className="w-5 h-5" />
+      </Link>
+
+      {/* Liquid Glass Background Blobs for Welcome Screen */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute top-[10%] left-[10%] w-[30%] h-[30%] bg-[#D9653B]/10 rounded-full mix-blend-multiply filter blur-[80px] animate-blob"></div>
+        <div className="absolute bottom-[20%] right-[10%] w-[40%] h-[40%] bg-[#F4A261]/10 rounded-full mix-blend-multiply filter blur-[100px] animate-blob animation-delay-2000"></div>
+      </div>
+
       {/* The "Card" Container */}
-      {/* This div now holds the card's styling: background, blur, padding, border, shadow, and hover effect */}
       <div className="w-full max-w-2xl z-10
-                      bg-neutral-900/50 backdrop-blur-md 
-                      p-8 rounded-2xl border border-neutral-700 
-                      shadow-2xl shadow-black/60 
-                      transition-all duration-300 hover:border-neutral-600">
+                      bg-white/80 backdrop-blur-xl 
+                      p-8 rounded-3xl border border-[#E5E0D8] 
+                      shadow-[0_8px_30px_rgb(0,0,0,0.04)] 
+                      transition-all duration-300 hover:border-[#D9653B]/30 hover:shadow-[0_8px_30px_rgb(217,101,59,0.08)]">
         
         {/* Header section of the card */}
         <div className="text-center space-y-4">
-          <h1 className="text-4xl font-bold text-white flex items-center justify-center gap-3">
-            PM Research Copilot
+          <h1 className="text-4xl font-serif font-bold text-[#1A1A1A] flex items-center justify-center gap-3">
+            Research Terminal
           </h1>
-          <p className="text-lg text-neutral-300 max-w-md mx-auto">
+          <p className="text-lg text-[#666666] max-w-md mx-auto">
             从行业研究到 PRD，一站式产品研究工作台
           </p>
         </div>
@@ -43,9 +56,9 @@ export function WelcomeScreen({
               <Button
                 variant="outline"
                 onClick={onCancel}
-                className="text-red-400 hover:text-red-300 hover:bg-red-900/20 border-red-700/50" // Enhanced cancel button
+                className="text-red-500 hover:text-red-600 hover:bg-red-50 border-red-200 rounded-full px-6"
               >
-                Cancel
+                取消
               </Button>
             </div>
           )}
