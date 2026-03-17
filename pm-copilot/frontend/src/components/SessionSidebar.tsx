@@ -1,5 +1,6 @@
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { MessageSquarePlus, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
+import { MessageSquarePlus, Trash2, ChevronLeft, ChevronRight, Home } from "lucide-react";
 import { cn } from "@/utils";
 
 export interface SessionListItem {
@@ -53,22 +54,29 @@ export function SessionSidebar({
         collapsed ? "w-12" : "w-[280px]"
       )}
     >
-      <div className="flex items-center justify-between h-14 px-3 border-b border-[#E5E0D8] shrink-0">
+      <div className="flex items-center gap-2 h-14 px-3 border-b border-[#E5E0D8] shrink-0">
+        <Link
+          to="/"
+          className="flex items-center justify-center w-9 h-9 rounded-full shrink-0 bg-[#FAF9F6] hover:bg-[#D9653B]/10 text-[#666666] hover:text-[#D9653B] transition-colors"
+          title="返回主页"
+        >
+          <Home className="w-5 h-5" />
+        </Link>
         {!collapsed && (
           <Button
             variant="ghost"
             size="sm"
-            className="text-[#1A1A1A] hover:bg-[#D9653B]/10 hover:text-[#D9653B] rounded-full gap-2"
+            className="flex-1 min-w-0 justify-start text-[#1A1A1A] hover:bg-[#D9653B]/10 hover:text-[#D9653B] rounded-full gap-2"
             onClick={onNewChat}
           >
-            <MessageSquarePlus className="w-4 h-4" />
-            新对话
+            <MessageSquarePlus className="w-4 h-4 shrink-0" />
+            <span className="truncate">新对话</span>
           </Button>
         )}
         <button
           type="button"
           onClick={onToggleCollapsed}
-          className="p-2 rounded-lg text-[#666666] hover:bg-[#FAF9F6] hover:text-[#1A1A1A] transition-colors"
+          className="p-2 rounded-lg shrink-0 text-[#666666] hover:bg-[#FAF9F6] hover:text-[#1A1A1A] transition-colors"
           title={collapsed ? "展开侧栏" : "收起侧栏"}
         >
           {collapsed ? <ChevronRight className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />}

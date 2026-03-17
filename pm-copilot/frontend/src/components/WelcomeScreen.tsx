@@ -1,7 +1,5 @@
-import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { InputForm } from "@/components/InputForm";
-import { Home } from "lucide-react";
 
 interface WelcomeScreenProps {
   handleSubmit: (query: string) => void;
@@ -16,15 +14,6 @@ export function WelcomeScreen({
 }: WelcomeScreenProps) {
   return (
     <div className="flex-1 flex flex-col items-center justify-center p-4 overflow-hidden relative">
-      {/* Home: 返回主页 */}
-      <Link
-        to="/"
-        className="fixed top-4 left-4 z-20 flex items-center justify-center w-10 h-10 rounded-full bg-white/80 backdrop-blur-md border border-[#E5E0D8] text-[#666666] hover:text-[#D9653B] hover:border-[#D9653B]/30 transition-colors shadow-sm"
-        title="返回主页"
-      >
-        <Home className="w-5 h-5" />
-      </Link>
-
       {/* Liquid Glass Background Blobs for Welcome Screen */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <div className="absolute top-[10%] left-[10%] w-[30%] h-[30%] bg-[#D9653B]/10 rounded-full mix-blend-multiply filter blur-[80px] animate-blob"></div>

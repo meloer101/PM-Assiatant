@@ -1,7 +1,6 @@
 import type React from "react";
-import { Link } from "react-router-dom";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2, Copy, CopyCheck, Home } from "lucide-react";
+import { Loader2, Copy, CopyCheck } from "lucide-react";
 import { InputForm } from "@/components/InputForm";
 import { Button } from "@/components/ui/button";
 import { useState, ReactNode } from "react";
@@ -325,19 +324,10 @@ export function ChatMessagesView({
       {/* Header with New Chat button */}
       <div className="border-b border-[#E5E0D8] p-4 bg-white/80 backdrop-blur-md sticky top-0 z-10">
         <div className="max-w-4xl mx-auto flex justify-between items-center">
-          <div className="flex items-center gap-3">
-            <Link
-              to="/"
-              className="flex items-center justify-center w-9 h-9 rounded-full bg-[#FAF9F6] hover:bg-[#D9653B]/10 text-[#666666] hover:text-[#D9653B] transition-colors"
-              title="返回主页"
-            >
-              <Home className="w-5 h-5" />
-            </Link>
-            <h1 className="text-lg font-serif font-bold text-[#1A1A1A] flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-[#D9653B]"></span>
-              Research Terminal
-            </h1>
-          </div>
+          <h1 className="text-lg font-serif font-bold text-[#1A1A1A] flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-[#D9653B]"></span>
+            Research Terminal
+          </h1>
           <Button
             onClick={onNewChat}
             variant="outline"
