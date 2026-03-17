@@ -54,28 +54,38 @@ export function SessionSidebar({
         collapsed ? "w-12" : "w-[280px]"
       )}
     >
-      <div className="flex items-center gap-2 h-14 px-3 border-b border-[#E5E0D8] shrink-0">
-        <Link
-          to="/"
-          className="flex items-center justify-center w-9 h-9 rounded-full shrink-0 bg-[#FAF9F6] hover:bg-[#D9653B]/10 text-[#666666] hover:text-[#D9653B] transition-colors"
-          title="返回主页"
-        >
-          <Home className="w-5 h-5" />
-        </Link>
+      <div className={cn("flex items-center h-14 shrink-0", collapsed ? "relative justify-center px-0" : "gap-2 px-3")}>
         {collapsed ? (
-          <button
-            type="button"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              onToggleCollapsed();
-            }}
-            className="flex-1 min-h-[2.25rem] rounded-lg hover:bg-[#FAF9F6] transition-colors cursor-pointer"
-            title="展开侧栏"
-            aria-label="展开侧栏"
-          />
+          <>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onToggleCollapsed();
+              }}
+              className="absolute inset-0 w-full cursor-pointer"
+              title="展开侧栏"
+              aria-label="展开侧栏"
+            />
+            <Link
+              to="/"
+              onClick={(e) => e.stopPropagation()}
+              className="relative z-10 flex items-center justify-center w-9 h-9 rounded-full shrink-0 bg-[#FAF9F6] hover:bg-[#D9653B]/10 text-[#666666] hover:text-[#D9653B] transition-colors"
+              title="返回主页"
+            >
+              <Home className="w-5 h-5" />
+            </Link>
+          </>
         ) : (
           <>
+            <Link
+              to="/"
+              className="flex items-center justify-center w-9 h-9 rounded-full shrink-0 bg-[#FAF9F6] hover:bg-[#D9653B]/10 text-[#666666] hover:text-[#D9653B] transition-colors"
+              title="返回主页"
+            >
+              <Home className="w-5 h-5" />
+            </Link>
             <Button
               variant="ghost"
               size="sm"
