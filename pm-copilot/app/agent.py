@@ -176,6 +176,10 @@ class EscalationChecker(BaseAgent):
 
 TODAY = datetime.datetime.now().strftime("%Y-%m-%d")
 
+LANG_DIRECTIVE = (
+    "\n\nIMPORTANT: You MUST write ALL output in Simplified Chinese (简体中文)."
+)
+
 # --- Plan Generator (used as AgentTool by root_agent) ---
 
 plan_generator = LlmAgent(
@@ -203,6 +207,7 @@ plan_generator = LlmAgent(
 
     Do NOT perform any research yourself. Do NOT use any tools.
     Current date: {TODAY}
+    {LANG_DIRECTIVE}
     """,
 )
 
@@ -340,6 +345,9 @@ research_composer = LlmAgent(
     name="research_composer",
     include_contents="none",
     description="Writes the final cited research report.",
+    generate_content_config=genai_types.GenerateContentConfig(
+        max_output_tokens=8192,
+    ),
     instruction="""
     Transform the research into a polished, professional report with PM insights.
 
@@ -361,7 +369,7 @@ research_composer = LlmAgent(
 
     Generate a comprehensive report following the Report Structure outline.
     Do NOT include a References section — all citations must be in-line.
-    """,
+    """ + LANG_DIRECTIVE,
     output_key="final_cited_report",
     before_agent_callback=make_truncate_state_callback("section_research_findings"),
     after_agent_callback=citation_replacement_callback,
@@ -426,6 +434,9 @@ prd_composer = LlmAgent(
     name="prd_composer",
     include_contents="none",
     description="Generates a structured PRD from research and company knowledge.",
+    generate_content_config=genai_types.GenerateContentConfig(
+        max_output_tokens=8192,
+    ),
     instruction="""
     You are a senior product manager writing a Product Requirements Document.
 
@@ -462,7 +473,7 @@ prd_composer = LlmAgent(
 
     Incorporate insights from company knowledge where available.
     Be specific and actionable — avoid vague statements.
-    """,
+    """ + LANG_DIRECTIVE,
     output_key="prd_document",
 )
 
@@ -518,6 +529,7 @@ root_agent = LlmAgent(
     - If the user says "停止" or "取消", end the conversation politely.
     - If the user says "返回" or "重新", go back to the relevant stage.
     - Keep your messages brief and focused on status + next action.
+    {LANG_DIRECTIVE}
     """,
     sub_agents=[research_pipeline, prd_pipeline],
     tools=[AgentTool(plan_generator)],

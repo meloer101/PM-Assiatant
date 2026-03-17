@@ -33,6 +33,26 @@ interface AdkSession {
   lastUpdateTime?: number;
 }
 
+const CITE_TAG_RE = /<cite\s+source\s*=\s*["']?\s*(src-\d+)\s*["']?\s*\/>/g;
+
+function replaceCiteTags(
+  content: string,
+  sources: Record<string, any>,
+): string {
+  return content.replace(CITE_TAG_RE, (_match, shortId) => {
+    const src = sources[shortId];
+    if (src?.url) {
+      const title = src.title || src.domain || shortId;
+      return ` [${title}](${src.url})`;
+    }
+    return '';
+  });
+}
+
+function stripCiteTags(content: string): string {
+  return content.replace(CITE_TAG_RE, '');
+}
+
 function getSessionTitleFromEvents(events: AdkSessionEvent[] | undefined): string {
   if (!events?.length) return "新对话";
   const firstUser = events.find((e) => e.content?.role === "user");
@@ -56,7 +76,7 @@ function eventsToMessages(events: AdkSessionEvent[] | undefined): MessageWithAge
     } else if (role === "model") {
       out.push({
         type: "ai",
-        content: text,
+        content: stripCiteTags(text),
         id,
         agent: ev.author,
         finalReportWithCitations: false,
@@ -95,6 +115,7 @@ export default function ChatApp() {
   const currentAgentRef = useRef('');
   const accumulatedTextRef = useRef("");
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const sourcesRef = useRef<Record<string, any>>({});
 
   const retryWithBackoff = async (
     fn: () => Promise<any>,
@@ -386,15 +407,17 @@ export default function ChatApp() {
 
     if (sources) {
       console.log('[SSE HANDLER] Adding Retrieved Sources timeline event:', sources);
+      sourcesRef.current = { ...sourcesRef.current, ...sources };
       setMessageEvents(prev => new Map(prev).set(aiMessageId, [...(prev.get(aiMessageId) || []), {
         title: "Retrieved Sources", data: { type: 'sources', content: sources }
       }]));
     }
 
     if ((agent === "research_composer" || agent === "prd_composer") && finalReportWithCitations) {
+      const processed = replaceCiteTags(finalReportWithCitations as string, sourcesRef.current);
       const finalReportMessageId = Date.now().toString() + "_final";
-      setMessages(prev => [...prev, { type: "ai", content: finalReportWithCitations as string, id: finalReportMessageId, agent: currentAgentRef.current, finalReportWithCitations: true }]);
-      setDisplayData(finalReportWithCitations as string);
+      setMessages(prev => [...prev, { type: "ai", content: processed, id: finalReportMessageId, agent: currentAgentRef.current, finalReportWithCitations: true }]);
+      setDisplayData(processed);
     }
   };
 
