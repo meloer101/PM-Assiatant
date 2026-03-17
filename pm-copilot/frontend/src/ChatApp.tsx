@@ -639,7 +639,7 @@ export default function ChatApp() {
         
         <div className="text-center space-y-6">
           <h1 className="text-4xl font-serif font-bold text-[#1A1A1A] flex items-center justify-center gap-3">
-            Research Terminal
+            Steven
           </h1>
           
           <div className="flex flex-col items-center space-y-4">

@@ -326,7 +326,7 @@ export function ChatMessagesView({
         <div className="max-w-4xl mx-auto flex justify-between items-center">
           <h1 className="text-lg font-serif font-bold text-[#1A1A1A] flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-[#D9653B]"></span>
-            Research Terminal
+            Steven
           </h1>
           <Button
             onClick={onNewChat}

@@ -30,7 +30,7 @@ export function WelcomeScreen({
         {/* Header section of the card */}
         <div className="text-center space-y-4">
           <h1 className="text-4xl font-serif font-bold text-[#1A1A1A] flex items-center justify-center gap-3">
-            Research Terminal
+            Steven
           </h1>
           <p className="text-lg text-[#666666] max-w-md mx-auto">
             从行业研究到 PRD，一站式产品研究工作台
