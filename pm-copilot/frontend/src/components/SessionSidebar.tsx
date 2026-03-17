@@ -62,26 +62,60 @@ export function SessionSidebar({
         >
           <Home className="w-5 h-5" />
         </Link>
-        {!collapsed && (
-          <Button
-            variant="ghost"
-            size="sm"
-            className="flex-1 min-w-0 justify-start text-[#1A1A1A] hover:bg-[#D9653B]/10 hover:text-[#D9653B] rounded-full gap-2"
-            onClick={onNewChat}
-          >
-            <MessageSquarePlus className="w-4 h-4 shrink-0" />
-            <span className="truncate">新对话</span>
-          </Button>
+        {collapsed ? (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onToggleCollapsed();
+            }}
+            className="flex-1 min-h-[2.25rem] rounded-lg hover:bg-[#FAF9F6] transition-colors cursor-pointer"
+            title="展开侧栏"
+            aria-label="展开侧栏"
+          />
+        ) : (
+          <>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="flex-1 min-w-0 justify-start text-[#1A1A1A] hover:bg-[#D9653B]/10 hover:text-[#D9653B] rounded-full gap-2"
+              onClick={onNewChat}
+            >
+              <MessageSquarePlus className="w-4 h-4 shrink-0" />
+              <span className="truncate">新对话</span>
+            </Button>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onToggleCollapsed();
+              }}
+              className="p-2 rounded-lg shrink-0 text-[#666666] hover:bg-[#FAF9F6] hover:text-[#1A1A1A] transition-colors"
+              title="收起侧栏"
+              aria-label="收起侧栏"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+          </>
         )}
+      </div>
+      {collapsed && (
         <button
           type="button"
-          onClick={onToggleCollapsed}
-          className="p-2 rounded-lg shrink-0 text-[#666666] hover:bg-[#FAF9F6] hover:text-[#1A1A1A] transition-colors"
-          title={collapsed ? "展开侧栏" : "收起侧栏"}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            onToggleCollapsed();
+          }}
+          className="flex-1 w-full flex items-center justify-center text-[#666666] hover:bg-[#FAF9F6] hover:text-[#1A1A1A] transition-colors cursor-pointer"
+          title="展开侧栏"
+          aria-label="展开侧栏"
         >
-          {collapsed ? <ChevronRight className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />}
+          <ChevronRight className="w-5 h-5" />
         </button>
-      </div>
+      )}
       {!collapsed && (
         <div className="flex-1 overflow-y-auto py-2">
           {loading ? (
