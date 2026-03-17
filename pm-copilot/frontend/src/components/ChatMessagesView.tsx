@@ -320,9 +320,9 @@ export function ChatMessagesView({
   const lastAiMessageId = lastAiMessage?.id;
 
   return (
-    <div className="flex flex-col h-full w-full bg-[#FAF9F6]">
+    <div className="flex flex-col h-full min-h-0 w-full bg-[#FAF9F6]">
       {/* Header with New Chat button */}
-      <div className="border-b border-[#E5E0D8] p-4 bg-white/80 backdrop-blur-md sticky top-0 z-10">
+      <div className="shrink-0 border-b border-[#E5E0D8] p-4 bg-white/80 backdrop-blur-md">
         <div className="max-w-4xl mx-auto flex justify-between items-center">
           <h1 className="text-lg font-serif font-bold text-[#1A1A1A] flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-[#D9653B]"></span>
@@ -337,8 +337,8 @@ export function ChatMessagesView({
           </Button>
         </div>
       </div>
-      <div className="flex-1 flex flex-col w-full">
-        <ScrollArea ref={scrollAreaRef} className="flex-1 w-full">
+      <div className="flex-1 min-h-0 flex flex-col w-full overflow-hidden">
+        <ScrollArea ref={scrollAreaRef} className="flex-1 w-full h-full">
           <div className="p-4 md:p-8 space-y-6 max-w-4xl mx-auto">
             {messages.map((message) => { // Removed index as it's not directly used for this logic
               const eventsForMessage = message.type === "ai" ? (messageEvents.get(message.id) || []) : [];
@@ -400,7 +400,7 @@ export function ChatMessagesView({
           </div>
         </ScrollArea>
       </div>
-      <div className="border-t border-[#E5E0D8] p-4 w-full bg-white/80 backdrop-blur-md">
+      <div className="shrink-0 border-t border-[#E5E0D8] p-4 w-full bg-white/80 backdrop-blur-md">
         <div className="max-w-4xl mx-auto">
           <InputForm onSubmit={onSubmit} isLoading={isLoading} context="chat" />
           {isLoading && (

@@ -563,15 +563,19 @@ export default function ChatApp() {
     }
   }, [processSseEventData, userId, sessionId, appName, fetchSessionList]);
 
+  // Auto-scroll to latest message when messages change (e.g. after send)
   useEffect(() => {
-    if (scrollAreaRef.current) {
-      const scrollViewport = scrollAreaRef.current.querySelector(
-        "[data-radix-scroll-area-viewport]"
-      );
-      if (scrollViewport) {
-        scrollViewport.scrollTop = scrollViewport.scrollHeight;
+    const scrollToBottom = () => {
+      if (scrollAreaRef.current) {
+        const scrollViewport = scrollAreaRef.current.querySelector(
+          "[data-radix-scroll-area-viewport]"
+        );
+        if (scrollViewport) {
+          scrollViewport.scrollTop = scrollViewport.scrollHeight;
+        }
       }
-    }
+    };
+    requestAnimationFrame(() => requestAnimationFrame(scrollToBottom));
   }, [messages]);
 
   useEffect(() => {
@@ -681,7 +685,13 @@ export default function ChatApp() {
         />
       )}
       <main className="flex-1 flex flex-col overflow-hidden min-w-0">
-        <div className={`flex-1 overflow-y-auto ${(messages.length === 0 || isCheckingBackend) ? "flex" : ""}`}>
+        <div
+          className={
+            messages.length > 0 && !isCheckingBackend
+              ? "flex-1 min-h-0 flex flex-col overflow-hidden"
+              : `flex-1 overflow-y-auto ${(messages.length === 0 || isCheckingBackend) ? "flex" : ""}`
+          }
+        >
           {isCheckingBackend ? (
             <BackendLoadingScreen />
           ) : !isBackendReady ? (
@@ -706,17 +716,19 @@ export default function ChatApp() {
               onCancel={handleCancel}
             />
           ) : (
-            <ChatMessagesView
-              messages={messages}
-              isLoading={isLoading}
+            <div className="flex-1 min-h-0 flex flex-col">
+              <ChatMessagesView
+                messages={messages}
+                isLoading={isLoading}
               scrollAreaRef={scrollAreaRef}
               onSubmit={(q) => void handleSubmit(q)}
               onCancel={handleCancel}
               onNewChat={handleNewChat}
               displayData={displayData}
-              messageEvents={messageEvents}
-              websiteCount={websiteCount}
-            />
+                messageEvents={messageEvents}
+                websiteCount={websiteCount}
+              />
+            </div>
           )}
         </div>
       </main>
