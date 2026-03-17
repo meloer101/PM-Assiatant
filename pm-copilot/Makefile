@@ -10,7 +10,7 @@ BACKEND_URL = http://$(BACKEND_HOST):$(BACKEND_PORT)
 
 start-backend:
 	@echo "Starting backend on $(BACKEND_URL)"
-	uv run adk api_server app --host="$(BACKEND_HOST)" --port="$(BACKEND_PORT)" --allow_origins="*"
+	uv run adk api_server app --host="$(BACKEND_HOST)" --port="$(BACKEND_PORT)" --allow_origins="*" --session_service_uri="sqlite:///data/sessions.db"
 
 start-frontend:
 	@echo "Starting frontend with API base $(BACKEND_URL)"

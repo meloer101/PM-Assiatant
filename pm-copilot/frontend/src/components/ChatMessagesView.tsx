@@ -288,6 +288,7 @@ interface ChatMessagesViewProps {
   scrollAreaRef: React.RefObject<HTMLDivElement | null>;
   onSubmit: (query: string) => void;
   onCancel: () => void;
+  onNewChat: () => void;
   displayData: string | null;
   messageEvents: Map<string, ProcessedEvent[]>;
   websiteCount: number;
@@ -299,6 +300,7 @@ export function ChatMessagesView({
   scrollAreaRef,
   onSubmit,
   onCancel,
+  onNewChat,
   messageEvents,
   websiteCount,
 }: ChatMessagesViewProps) {
@@ -312,10 +314,6 @@ export function ChatMessagesView({
     } catch (err) {
       console.error("Failed to copy text:", err);
     }
-  };
-
-  const handleNewChat = () => {
-    window.location.reload();
   };
 
   // Find the ID of the last AI message
@@ -341,7 +339,7 @@ export function ChatMessagesView({
             </h1>
           </div>
           <Button
-            onClick={handleNewChat}
+            onClick={onNewChat}
             variant="outline"
             className="bg-white hover:bg-[#FAF9F6] text-[#1A1A1A] border-[#E5E0D8] hover:border-[#D9653B]/50 transition-colors rounded-full px-5"
           >

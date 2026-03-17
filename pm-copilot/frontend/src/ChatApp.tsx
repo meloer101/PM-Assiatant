@@ -2,6 +2,11 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import { v4 as uuidv4 } from 'uuid';
 import { WelcomeScreen } from "@/components/WelcomeScreen";
 import { ChatMessagesView } from "@/components/ChatMessagesView";
+import { SessionSidebar, SessionListItem } from "@/components/SessionSidebar";
+
+const STORAGE_KEY_SESSION_ID = "pm_copilot_session_id";
+const USER_ID = "u_999";
+const APP_NAME = "app";
 
 // Update DisplayData to be a string type
 type DisplayData = string | null;
@@ -13,25 +18,53 @@ interface MessageWithAgent {
   finalReportWithCitations?: boolean;
 }
 
-interface AgentMessage {
-  parts: { text: string }[];
-  role: string;
+interface AdkSessionEvent {
+  id?: string;
+  author?: string;
+  content?: { role?: string; parts?: { text?: string }[] };
 }
 
-interface AgentResponse {
-  content: AgentMessage;
-  usageMetadata: {
-    candidatesTokenCount: number;
-    promptTokenCount: number;
-    totalTokenCount: number;
-  };
-  author: string;
-  actions: {
-    stateDelta: {
-      research_plan?: string;
-      final_report_with_citations?: boolean;
-    };
-  };
+interface AdkSession {
+  id: string;
+  appName: string;
+  userId: string;
+  state?: object;
+  events?: AdkSessionEvent[];
+  lastUpdateTime?: number;
+}
+
+function getSessionTitleFromEvents(events: AdkSessionEvent[] | undefined): string {
+  if (!events?.length) return "新对话";
+  const firstUser = events.find((e) => e.content?.role === "user");
+  if (!firstUser?.content?.parts) return "新对话";
+  const text = firstUser.content.parts.map((p) => p.text).filter(Boolean).join(" ");
+  return text.trim().slice(0, 36) || "新对话";
+}
+
+function eventsToMessages(events: AdkSessionEvent[] | undefined): MessageWithAgent[] {
+  if (!events?.length) return [];
+  const out: MessageWithAgent[] = [];
+  let idx = 0;
+  for (const ev of events) {
+    const role = ev.content?.role;
+    const parts = ev.content?.parts ?? [];
+    const text = parts.map((p) => p.text).filter(Boolean).join(" ").trim();
+    if (!text) continue;
+    const id = ev.id ?? `ev_${idx}`;
+    if (role === "user") {
+      out.push({ type: "human", content: text, id });
+    } else if (role === "model") {
+      out.push({
+        type: "ai",
+        content: text,
+        id,
+        agent: ev.author,
+        finalReportWithCitations: false,
+      });
+    }
+    idx++;
+  }
+  return out;
 }
 
 interface ProcessedEvent {
@@ -41,7 +74,13 @@ interface ProcessedEvent {
 
 export default function ChatApp() {
   const [userId, setUserId] = useState<string | null>(null);
-  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [sessionId, setSessionId] = useState<string | null>(() => {
+    try {
+      return localStorage.getItem(STORAGE_KEY_SESSION_ID);
+    } catch {
+      return null;
+    }
+  });
   const [appName, setAppName] = useState<string | null>(null);
   const [messages, setMessages] = useState<MessageWithAgent[]>([]);
   const [displayData, setDisplayData] = useState<DisplayData | null>(null);
@@ -50,6 +89,9 @@ export default function ChatApp() {
   const [websiteCount, setWebsiteCount] = useState<number>(0);
   const [isBackendReady, setIsBackendReady] = useState(false);
   const [isCheckingBackend, setIsCheckingBackend] = useState(true);
+  const [sessionList, setSessionList] = useState<SessionListItem[]>([]);
+  const [sessionListLoading, setSessionListLoading] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const currentAgentRef = useRef('');
   const accumulatedTextRef = useRef("");
   const scrollAreaRef = useRef<HTMLDivElement>(null);
@@ -82,17 +124,17 @@ export default function ChatApp() {
 
   const createSession = async (): Promise<{userId: string, sessionId: string, appName: string}> => {
     const generatedSessionId = uuidv4();
-    const response = await fetch(`/api/apps/app/users/u_999/sessions/${generatedSessionId}`, {
+    const response = await fetch(`/api/apps/${APP_NAME}/users/${USER_ID}/sessions/${generatedSessionId}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
       }
     });
-    
+
     if (!response.ok) {
       throw new Error(`Failed to create session: ${response.status} ${response.statusText}`);
     }
-    
+
     const data = await response.json();
     return {
       userId: data.userId,
@@ -100,6 +142,73 @@ export default function ChatApp() {
       appName: data.appName
     };
   };
+
+  const fetchSessionList = useCallback(async (): Promise<SessionListItem[]> => {
+    const res = await fetch(`/api/apps/${APP_NAME}/users/${USER_ID}/sessions`, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" }
+    });
+    if (!res.ok) return [];
+    const raw: AdkSession[] = await res.json();
+    return raw.map((s) => ({
+      id: s.id,
+      title: getSessionTitleFromEvents(s.events),
+      lastUpdateTime: s.lastUpdateTime ?? 0
+    }));
+  }, []);
+
+  const loadSessionById = useCallback(async (id: string) => {
+    const res = await fetch(`/api/apps/${APP_NAME}/users/${USER_ID}/sessions/${id}`, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" }
+    });
+    if (!res.ok) throw new Error("Failed to load session");
+    const session: AdkSession = await res.json();
+    const msgs = eventsToMessages(session.events);
+    setMessages(msgs);
+    setDisplayData(msgs.length ? msgs[msgs.length - 1]?.content ?? null : null);
+    setMessageEvents(new Map());
+    setWebsiteCount(0);
+    setUserId(session.userId);
+    setAppName(session.appName);
+    setSessionId(session.id);
+    try {
+      localStorage.setItem(STORAGE_KEY_SESSION_ID, session.id);
+    } catch { /* ignore */ }
+  }, []);
+
+  const handleNewChat = useCallback(() => {
+    setSessionId(null);
+    setMessages([]);
+    setDisplayData(null);
+    setMessageEvents(new Map());
+    setWebsiteCount(0);
+    setUserId(null);
+    setAppName(null);
+    try {
+      localStorage.removeItem(STORAGE_KEY_SESSION_ID);
+    } catch { /* ignore */ }
+  }, []);
+
+  const handleSelectSession = useCallback((id: string) => {
+    if (id === sessionId) return;
+    setSessionListLoading(true);
+    loadSessionById(id).finally(() => setSessionListLoading(false));
+  }, [sessionId, loadSessionById]);
+
+  const handleDeleteSession = useCallback((id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const deleteSession = async () => {
+      const res = await fetch(`/api/apps/${APP_NAME}/users/${USER_ID}/sessions/${id}`, {
+        method: "DELETE"
+      });
+      if (!res.ok) return;
+      const list = await fetchSessionList();
+      setSessionList(list);
+      if (sessionId === id) handleNewChat();
+    };
+    deleteSession();
+  }, [sessionId, fetchSessionList, handleNewChat]);
 
   const checkBackendHealth = useCallback(async (): Promise<boolean> => {
     try {
@@ -289,7 +398,7 @@ export default function ChatApp() {
     }
   };
 
-  const handleSubmit = useCallback(async (query: string, model: string, effort: string) => {
+  const handleSubmit = useCallback(async (query: string) => {
     if (!query.trim()) return;
 
     setIsLoading(true);
@@ -305,10 +414,14 @@ export default function ChatApp() {
         currentUserId = sessionData.userId;
         currentSessionId = sessionData.sessionId;
         currentAppName = sessionData.appName;
-        
+
         setUserId(currentUserId);
         setSessionId(currentSessionId);
         setAppName(currentAppName);
+        try {
+          if (currentSessionId) localStorage.setItem(STORAGE_KEY_SESSION_ID, currentSessionId);
+        } catch { /* ignore */ }
+        fetchSessionList().then(setSessionList);
         console.log('Session created successfully:', { currentUserId, currentSessionId, currentAppName });
       }
 
@@ -425,7 +538,7 @@ export default function ChatApp() {
       }]);
       setIsLoading(false);
     }
-  }, [processSseEventData]);
+  }, [processSseEventData, userId, sessionId, appName, fetchSessionList]);
 
   useEffect(() => {
     if (scrollAreaRef.current) {
@@ -441,10 +554,10 @@ export default function ChatApp() {
   useEffect(() => {
     const checkBackend = async () => {
       setIsCheckingBackend(true);
-      
+
       const maxAttempts = 60;
       let attempts = 0;
-      
+
       while (attempts < maxAttempts) {
         const isReady = await checkBackendHealth();
         if (isReady) {
@@ -452,36 +565,42 @@ export default function ChatApp() {
           setIsCheckingBackend(false);
           return;
         }
-        
+
         attempts++;
         await new Promise(resolve => setTimeout(resolve, 2000));
       }
-      
+
       setIsCheckingBackend(false);
       console.error("Backend failed to start within 2 minutes");
     };
-    
+
     checkBackend();
   }, [checkBackendHealth]);
+
+  const initialRestoreDone = useRef(false);
+  useEffect(() => {
+    if (!isBackendReady || initialRestoreDone.current) return;
+    initialRestoreDone.current = true;
+    setSessionListLoading(true);
+    fetchSessionList()
+      .then((list) => {
+        setSessionList(list);
+        try {
+          const persistedId = localStorage.getItem(STORAGE_KEY_SESSION_ID);
+          if (persistedId != null && persistedId !== "" && list.some((s) => s.id === persistedId)) {
+            return loadSessionById(persistedId);
+          }
+        } catch { /* ignore */ }
+      })
+      .finally(() => setSessionListLoading(false));
+  }, [isBackendReady, fetchSessionList, loadSessionById]);
 
   const handleCancel = useCallback(() => {
     setMessages([]);
     setDisplayData(null);
     setMessageEvents(new Map());
     setWebsiteCount(0);
-    window.location.reload();
-  }, []);
-
-  // Scroll to bottom when messages update
-  const scrollToBottom = useCallback(() => {
-    if (scrollAreaRef.current) {
-      const scrollViewport = scrollAreaRef.current.querySelector(
-        "[data-radix-scroll-area-viewport]"
-      );
-      if (scrollViewport) {
-        scrollViewport.scrollTop = scrollViewport.scrollHeight;
-      }
-    }
+    setIsLoading(false);
   }, []);
 
   const BackendLoadingScreen = () => (
@@ -526,7 +645,19 @@ export default function ChatApp() {
 
   return (
     <div className="flex h-screen bg-[#FAF9F6] text-[#1A1A1A] font-sans antialiased selection:bg-[#D9653B]/30">
-      <main className="flex-1 flex flex-col overflow-hidden w-full">
+      {isBackendReady && (
+        <SessionSidebar
+          sessions={sessionList}
+          currentSessionId={sessionId}
+          onSelectSession={handleSelectSession}
+          onNewChat={handleNewChat}
+          onDeleteSession={handleDeleteSession}
+          collapsed={sidebarCollapsed}
+          onToggleCollapsed={() => setSidebarCollapsed((c) => !c)}
+          loading={sessionListLoading}
+        />
+      )}
+      <main className="flex-1 flex flex-col overflow-hidden min-w-0">
         <div className={`flex-1 overflow-y-auto ${(messages.length === 0 || isCheckingBackend) ? "flex" : ""}`}>
           {isCheckingBackend ? (
             <BackendLoadingScreen />
@@ -547,7 +678,7 @@ export default function ChatApp() {
             </div>
           ) : messages.length === 0 ? (
             <WelcomeScreen
-              handleSubmit={handleSubmit}
+              handleSubmit={(q) => void handleSubmit(q)}
               isLoading={isLoading}
               onCancel={handleCancel}
             />
@@ -556,8 +687,9 @@ export default function ChatApp() {
               messages={messages}
               isLoading={isLoading}
               scrollAreaRef={scrollAreaRef}
-              onSubmit={handleSubmit}
+              onSubmit={(q) => void handleSubmit(q)}
               onCancel={handleCancel}
+              onNewChat={handleNewChat}
               displayData={displayData}
               messageEvents={messageEvents}
               websiteCount={websiteCount}
